@@ -1,4 +1,4 @@
-const format = `
+const createHTML = `
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -15,4 +15,4 @@ const format = `
 </html>
 `;
 
-module.exports = format;
+module.exports = createHTML;

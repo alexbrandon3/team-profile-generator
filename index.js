@@ -1,97 +1,120 @@
-// TODO: Include packages needed for this application
+// Includes packages and imports needed for this application
 const inquirer = require("inquirer");
 const fs = require("fs");
-const frame = require("./src/format.js");
-const Employee = require("./lib/Employee.js")
-const Engineer = require("./lib/Engineer.js")
-const Intern = require("./lib/Intern.js")
-const Manager = require("./lib/Manager.js")
-// TODO: Create an array of questions for user input
-const questions = [
-  "What is the title of your project?",
-  "Please provide a description of your application.",
-  "Now provide any instructions for installing your application.",
-  "Now provide necessary usage information for your application.",
-  "Now provide any guidelines for contributing to your application.",
-  "Now provide any instructions for testing your application.",
-  "What is your preferred license for this application?",
-  "What is your github username?",
-  "What is your email address?",
-];
+const frame = require("./src/createHTML.js");
+const Engineer = require("./lib/Engineer.js");
+const Intern = require("./lib/Intern.js");
+const Manager = require("./lib/Manager.js");
 
-// TODO: Create a function to write README file
-function writeToFile(fileName, data) {
-  const {
-    title,
-    description,
-    install,
-    usage,
-    contribute,
-    test,
-    license,
-    github,
-    address,
-  } = data;
-  fs.writeFile(fileName, frame.format, (err) =>
-    err ? console.log(err) : console.log("Success!")
-  );
-}
+// Creates an empty array in which employee objects may be stored
+const team = [];
 
-// TODO: Create a function to initialize app
-function init() {
-  inquirer
+// Gets manager information
+const getManager = () => {
+  return inquirer
     .prompt([
       {
         type: "input",
-        message: questions[0],
-        name: "title",
+        name: "name",
+        message: "What is the name of your team's manager?",
       },
       {
         type: "input",
-        message: questions[1],
-        name: "description",
+        name: "id",
+        message: "Please enter the manager's ID.",
       },
       {
         type: "input",
-        message: questions[2],
-        name: "install",
+        name: "email",
+        message: "Please enter the manager's email.",
       },
       {
         type: "input",
-        message: questions[3],
-        name: "usage",
-      },
-      {
-        type: "input",
-        message: questions[4],
-        name: "contribute",
-      },
-      {
-        type: "input",
-        message: questions[5],
-        name: "test",
-      },
-      {
-        type: "list",
-        message: questions[6],
-        name: "license",
-        choices: ["MIT", "Mozilla", "Open Data Commons"],
-      },
-      {
-        type: "input",
-        message: questions[7],
-        name: "github",
-      },
-      {
-        type: "input",
-        message: questions[8],
-        name: "address",
+        name: "officeNumber",
+        message: "Please enter the manager's office number",
       },
     ])
-    .then((data) => {
-      writeToFile("generated.html", data);
+    .then((managerInfo) => {
+      const { name, id, email, officeNumber } = managerInfo;
+      const manager = new Manager(name, id, email, officeNumber);
+
+      team.push(manager);
+      console.log(manager);
     });
-}
+};
+
+const getEmployee = () => {
+    console.log(`
+        -----------------
+        Now to add employees to your team.
+        -----------------
+        `);
+
+    return inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "role",
+          message: "Please choose the role of your employee.",
+          choices: ["Engineer", "Intern"],
+        },
+        {
+          type: "input",
+          name: "name",
+          message: "What is the name of your employee?",
+        },
+        {
+          type: "input",
+          name: "id",
+          message: "Please provide your employee's ID.",
+        },
+        {
+          type: "input",
+          name: "email",
+          message: "Please provide the employee's email address.",
+        },
+        {
+          type: "input",
+          name: "github",
+          message: "Please provide your employee's github username.",
+        },
+        {
+          type: "input",
+          name: "school",
+          message: "Please provide your employee's school",
+        },
+        {
+          type: "confirm",
+          name: "additional",
+          message: "Would you like to add more team members?",
+          default: false,
+        },
+      ])
+      .then((inputInfo) => {
+
+        let { name, id, email, role, github, school, additional } =
+          inputInfo;
+        let employee;
+
+        if (role === "Engineer") {
+          employee = new Engineer(name, id, email, github);
+
+          console.log(employee);
+        } else if (role === "Intern") {
+          employee = new Intern(name, id, email, school);
+
+          console.log(employee);
+        }
+
+        team.push(employee);
+
+        if (additional) {
+          return getEmployee(team);
+        } else {
+          return team;
+        }
+      });
+};
 
 // Function call to initialize app
-init();
+getManager().then(getEmployee);
